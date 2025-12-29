@@ -1,20 +1,20 @@
 package game;
 
-import engine.annotations.MovementCollision;
-import engine.annotations.OnRender;
-import engine.annotations.OnUpdate;
+import engine.annotations.*;
 import engine.entities.Collidable;
 import engine.entities.Entity;
 import engine.entities.Renderable;
-import engine.helper.Collision;
 import engine.input.Keyboard;
 
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
-@MovementCollision
+@EnableMovement
+@MovementCollision(bounceSpeedX = 3, bounceSpeedY = 3, bounceThreshold = 5)
+@VerticalMovement(speed = 10, acceleration = 0, deceleration = 0)
+@HorizontalMovement(speed = 10, acceleration = .1f)
+@Gravity()
 public class Player extends Entity implements Renderable, Collidable {
-    boolean left, right, up, down;
 
     public Player(float x, float y, float width, float height) {
         super(x, y, width, height);
@@ -28,14 +28,11 @@ public class Player extends Entity implements Renderable, Collidable {
         Keyboard.onRelease(KeyEvent.VK_W, () -> up = false);
         Keyboard.onRelease(KeyEvent.VK_S, () -> down = false);
 
-        Keyboard.onPress(KeyEvent.VK_SPACE, () -> ySpeed -= 10);
+        Keyboard.onPress(KeyEvent.VK_SPACE, () -> ySpeed -= 20);
     }
 
     @OnUpdate
-    //@Gravity(acceleration = .1f)
-    public void update() {
-        this.move();
-    }
+    public void update() {}
 
     @Override
     @OnRender
@@ -46,17 +43,5 @@ public class Player extends Entity implements Renderable, Collidable {
 
     @Override
     public void collide(Entity e) {
-    }
-
-    private void move() {
-        xSpeed = 0;
-        ySpeed = 0;
-        if (left) xSpeed -= 5;
-        if (right) xSpeed += 5;
-        if (down) ySpeed += 5;
-        if (up) ySpeed -= 5;
-
-        x += xSpeed;
-        y += ySpeed;
     }
 }

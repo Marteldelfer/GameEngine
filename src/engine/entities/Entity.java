@@ -3,6 +3,7 @@ package engine.entities;
 
 public abstract class Entity {
     protected boolean active;
+    protected boolean up, down, left, right;
     protected float x, y, width, height;
     protected float xSpeed, ySpeed;
 
@@ -57,5 +58,29 @@ public abstract class Entity {
     }
     public void setySpeed(float ySpeed) {
         this.ySpeed = ySpeed;
+    }
+    public boolean isUp() {
+        return up;
+    }
+    public void setUp(boolean up) {
+        this.up = up;
+    }
+    public boolean isDown() {
+        return down;
+    }
+    public void setDown(boolean down) {
+        this.down = down;
+    }
+    public boolean isLeft() {
+        return left;
+    }
+    public void setLeft(boolean left) {
+        this.left = left;
+    }
+    public boolean isRight() {
+        return right;
+    }
+    public void setRight(boolean right) {
+        this.right = right;
     }
 }

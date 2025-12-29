@@ -7,8 +7,5 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface MovementCollision {
-    float bounceSpeedX() default 0;
-    float bounceSpeedY() default 0;
-    float bounceThreshold() default 2;
+public @interface EnableMovement {
 }
