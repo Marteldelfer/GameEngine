@@ -1,20 +1,27 @@
 package engine.core;
 
+import engine.graphics.Panel;
+import engine.state.EntityManager;
 import engine.state.GameState;
 
 public class GameLoop implements Runnable {
 
     private final int FPS, UPS;
     private boolean running = true;
+    private final Panel panel;
     private GameState gameState;
+    private boolean changeStates;
+    private GameState nextGameState;
 
-    public GameLoop(int FPS, int UPS) {
+    public GameLoop(int FPS, int UPS, Panel panel) {
         this.FPS = FPS;
         this.UPS = UPS;
+        this.panel = panel;
     }
-    public GameLoop() {
+    public GameLoop(Panel panel) {
         this.FPS = 60;
         this.UPS = 60;
+        this.panel = panel;
     }
 
     @Override
@@ -56,10 +63,27 @@ public class GameLoop implements Runnable {
     }
 
     private void update() {
+        if (changeStates) updateState();
         gameState.update();
     }
+
+    private void updateState() {
+        if (this.gameState != null) {
+            this.gameState.onExit();
+            nextGameState.setEntityManager(this.gameState.getEntityManager());
+        } else {
+            nextGameState.setEntityManager(new EntityManager());
+        }
+        nextGameState.setPanel(panel);
+        nextGameState.setGameLoop(this);
+        panel.setGameState(nextGameState);
+        this.gameState = nextGameState;
+        gameState.onEnter();
+        changeStates = false;
+    }
+
     private void render() {
-        gameState.getPanel().repaint();
+        panel.repaint();
     }
 
     public void setRunning(boolean running) {
@@ -67,5 +91,10 @@ public class GameLoop implements Runnable {
     }
     public void setGameState(GameState gameState) {
         this.gameState = gameState;
+    }
+
+    public void initState(GameState gameState) {
+        this.nextGameState = gameState;
+        changeStates = true;
     }
 }

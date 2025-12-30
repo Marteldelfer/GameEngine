@@ -2,6 +2,7 @@ package engine.entities;
 
 
 import engine.state.EntityManager;
+import engine.state.GameState;
 
 public abstract class Entity {
     protected boolean active;
@@ -10,8 +11,9 @@ public abstract class Entity {
     protected float xSpeed, ySpeed;
 
     protected EntityManager entityManager;
+    protected GameState gameState;
 
-    public Entity(float x, float y, float width, float height, EntityManager entityManager) {
+    public Entity(float x, float y, float width, float height, EntityManager entityManager, GameState gameState) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -20,6 +22,7 @@ public abstract class Entity {
         this.xSpeed = 0;
         this.ySpeed = 0;
         this.entityManager = entityManager;
+        this.gameState = gameState;
     }
 
     public boolean isActive() {

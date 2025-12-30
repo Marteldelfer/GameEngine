@@ -26,4 +26,10 @@ public class EntityManager {
     public List<Entity> getEntities() {
         return entities;
     }
+
+    public void clear() {
+        toAdd.clear();
+        toRemove.clear();
+        entities.clear();
+    }
 }

@@ -5,7 +5,6 @@ import engine.entities.Collidable;
 import engine.entities.Entity;
 import engine.entities.Renderable;
 import engine.helper.Collision;
-import engine.graphics.Panel;
 
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
@@ -13,8 +12,8 @@ import java.lang.reflect.Method;
 import java.util.Comparator;
 
 public class DefaultGameState extends GameState {
-    public DefaultGameState(EntityManager entityManager, Panel panel) {
-        super(panel, entityManager);
+    public DefaultGameState() {
+        super();
     }
 
     @Override
@@ -23,11 +22,11 @@ public class DefaultGameState extends GameState {
 
     @Override
     public void onExit() {
+        entityManager.clear();
     }
 
     @Override
     public void update() {
-        System.out.println(entityManager.getEntities());
         clearInactiveEntities();
         for (Entity entity : entityManager.getEntities()) {
             for (Method m : entity.getClass().getDeclaredMethods()) {
