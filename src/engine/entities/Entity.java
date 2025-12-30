@@ -1,13 +1,17 @@
 package engine.entities;
 
 
+import engine.state.EntityManager;
+
 public abstract class Entity {
     protected boolean active;
     protected boolean up, down, left, right;
     protected float x, y, width, height;
     protected float xSpeed, ySpeed;
 
-    public Entity(float x, float y, float width, float height) {
+    protected EntityManager entityManager;
+
+    public Entity(float x, float y, float width, float height, EntityManager entityManager) {
         this.x = x;
         this.y = y;
         this.width = width;
@@ -15,6 +19,7 @@ public abstract class Entity {
         this.active = true;
         this.xSpeed = 0;
         this.ySpeed = 0;
+        this.entityManager = entityManager;
     }
 
     public boolean isActive() {
@@ -82,5 +87,11 @@ public abstract class Entity {
     }
     public void setRight(boolean right) {
         this.right = right;
+    }
+    public EntityManager getEntityManager() {
+        return entityManager;
+    }
+    public void setEntityManager(EntityManager entityManager) {
+        this.entityManager = entityManager;
     }
 }

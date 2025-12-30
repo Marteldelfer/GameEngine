@@ -7,9 +7,11 @@ import java.awt.*;
 public abstract class GameState {
 
     protected Panel panel;
+    protected EntityManager entityManager;
 
-    public GameState(Panel panel) {
+    public GameState(Panel panel, EntityManager entityManager) {
         this.panel = panel;
+        this.entityManager = entityManager;
         panel.setGameState(this);
         onEnter();
     }

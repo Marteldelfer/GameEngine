@@ -3,28 +3,22 @@ package engine.state;
 import engine.annotations.*;
 import engine.entities.Collidable;
 import engine.entities.Entity;
+import engine.entities.Renderable;
 import engine.helper.Collision;
-import game.Npc;
-import game.Player;
 import engine.graphics.Panel;
 
 import java.awt.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Comparator;
 
 public class DefaultGameState extends GameState {
-    protected final EntityManager entityManager;
-
     public DefaultGameState(EntityManager entityManager, Panel panel) {
-        this.entityManager = entityManager;
-        super(panel);
+        super(panel, entityManager);
     }
 
     @Override
     public void onEnter() {
-        entityManager.addEntity(new Player(200, 200, 400, 400));
-        entityManager.addEntity(new Npc(200, 600, 200, 100));
-        entityManager.sync();
     }
 
     @Override
@@ -33,6 +27,8 @@ public class DefaultGameState extends GameState {
 
     @Override
     public void update() {
+        System.out.println(entityManager.getEntities());
+        clearInactiveEntities();
         for (Entity entity : entityManager.getEntities()) {
             for (Method m : entity.getClass().getDeclaredMethods()) {
                 try {
@@ -50,51 +46,62 @@ public class DefaultGameState extends GameState {
         }
     }
 
+    private void clearInactiveEntities() {
+        for (Entity e : entityManager.getEntities()) {
+            if (!e.isActive()) entityManager.remove(e);
+        }
+        entityManager.sync();
+    }
+
     private static void applyCollision(Entity entity, Entity b) {
         ((Collidable) entity).collide(b);
+        ((Collidable) b).collide(entity);
         applyMovementCollision(entity, b);
     }
 
     private static void applyMovementCollision(Entity entity, Entity b) {
-        if (entity.getClass().isAnnotationPresent(MovementCollision.class)) {
-            MovementCollision annotation = entity.getClass().getAnnotation(MovementCollision.class);
-            entity.setY(entity.getY() - entity.getySpeed());
-            if (Collision.isColliding(entity, b)) {
-                if (entity.getxSpeed() > 0) {
-                    entity.setX(b.getX() - entity.getWidth());
-                    if (entity.getxSpeed() > annotation.bounceThreshold()) {
-                        entity.setxSpeed(-annotation.bounceSpeedX());
-                    } else {
-                        entity.setxSpeed(0);
-                    }
-                } else if (entity.getxSpeed() < 0) {
-                    entity.setX(b.getX() + b.getWidth());
-                    if (entity.getxSpeed() < -annotation.bounceThreshold()) {
-                        entity.setxSpeed(annotation.bounceSpeedX());
-                    } else {
-                        entity.setxSpeed(0);
-                    }
-                }
-            }
-            entity.setY(entity.getY() + entity.getySpeed());
-            if (Collision.isColliding(entity, b)) {
-                if (entity.getySpeed() > 0) {
-                    entity.setY(b.getY() - entity.getHeight());
-                    if (entity.getySpeed() > annotation.bounceThreshold()) {
-                        entity.setySpeed(-annotation.bounceSpeedY());
-                    } else {
-                        entity.setySpeed(0);
-                    }
-                } else if (entity.getySpeed() < 0) {
-                    entity.setY(b.getY() + b.getHeight());
-                    if (entity.getySpeed() < -annotation.bounceThreshold()) {
-                        entity.setySpeed(annotation.bounceSpeedY());
-                    } else {
-                        entity.setySpeed(0);
-                    }
-                }
+        if (!entity.getClass().isAnnotationPresent(MovementCollision.class)) return;
+        if (!b.getClass().isAnnotationPresent(MovementCollision.class)) return;
 
+        MovementCollision annotation = entity.getClass().getAnnotation(MovementCollision.class);
+        // Horizontal collision
+        entity.setY(entity.getY() - entity.getySpeed());
+        if (Collision.isColliding(entity, b)) {
+            if (entity.getxSpeed() > 0) {
+                entity.setX(b.getX() - entity.getWidth());
+                if (entity.getxSpeed() > annotation.bounceThreshold()) {
+                    entity.setxSpeed(-annotation.bounceSpeedX());
+                } else {
+                    entity.setxSpeed(0);
+                }
+            } else if (entity.getxSpeed() < 0) {
+                entity.setX(b.getX() + b.getWidth());
+                if (entity.getxSpeed() < -annotation.bounceThreshold()) {
+                    entity.setxSpeed(annotation.bounceSpeedX());
+                } else {
+                    entity.setxSpeed(0);
+                }
             }
+        }
+        // Vertical collision
+        entity.setY(entity.getY() + entity.getySpeed());
+        if (Collision.isColliding(entity, b)) {
+            if (entity.getySpeed() > 0) {
+                entity.setY(b.getY() - entity.getHeight());
+                if (entity.getySpeed() > annotation.bounceThreshold()) {
+                    entity.setySpeed(-annotation.bounceSpeedY());
+                } else {
+                    entity.setySpeed(0);
+                }
+            } else if (entity.getySpeed() < 0) {
+                entity.setY(b.getY() + b.getHeight());
+                if (entity.getySpeed() < -annotation.bounceThreshold()) {
+                    entity.setySpeed(annotation.bounceSpeedY());
+                } else {
+                    entity.setySpeed(0);
+                }
+            }
+
         }
     }
 
@@ -141,14 +148,9 @@ public class DefaultGameState extends GameState {
 
     @Override
     public void render(Graphics g) {
-        for (Entity entity : entityManager.getEntities()) {
-            for (Method m : entity.getClass().getDeclaredMethods()) {
-                try {
-                    if (m.isAnnotationPresent(OnRender.class)) m.invoke(entity, g);
-                } catch (IllegalAccessException | InvocationTargetException e) {
-                    throw new RuntimeException(e.getMessage());
-                }
-            }
-        }
+        entityManager.getEntities().stream()
+                .filter(e -> e.getClass().isAnnotationPresent(OnRender.class) && e instanceof Renderable)
+                .sorted(Comparator.comparingInt(e -> e.getClass().getAnnotation(OnRender.class).z()))
+                .forEach(e -> ((Renderable) e).render(g));
     }
 }
